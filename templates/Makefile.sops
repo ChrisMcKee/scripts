@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+#SHELL:=/bin/bash
+
+default: help
+help: # Show help for each of the Makefile recipes.
+	@grep -E '^[a-zA-Z0-9 -]+:.*#'  Makefile | sort | while read -r l; do printf "\033[1;32m$$(echo $$l | cut -f 1 -d':')\033[00m:$$(echo $$l | cut -f 2- -d'#')\n"; done
+
+encrypt: # Encrypt all files where the name contains  .decrypted. to .encrypted. using Mozilla SOPs
+	@echo "Encrypting files with .decrypted. pattern..."
+	@for file in $$(find . -name "*.decrypted.*" -type f); do \
+		encrypted_file=$$(echo $$file | sed 's/\.decrypted\./\.encrypted\./'); \
+		echo "Encrypting $$file -> $$encrypted_file"; \
+		sops --encrypt $$file > $$encrypted_file; \
+	done
+	@echo "Encryption completed."
+
+.PHONY: decrypt
+
+decrypt: # Decrypt all files where the name contains .encrypted.  to .decrypted. using Mozilla SOPs
+	@echo "Decrypting files with .encrypted. pattern..."
+	@for file in $$(find . -name "*.encrypted.*" -type f); do \
+		decrypted_file=$$(echo $$file | sed 's/\.encrypted\./\.decrypted\./'); \
+		echo "Decrypting $$file -> $$decrypted_file"; \
+		sops --decrypt $$file > $$decrypted_file; \
+	done
+	@echo "Decryption completed."
